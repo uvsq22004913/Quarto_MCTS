@@ -23,8 +23,11 @@ def selection():
 
 # entrée : noeud sélectionné (2)
 # sortie : noeud sélectionné (3)
-def expansion():
-    pass
+def expansion(noeud):
+    for p_jouée in noeud.p_reste:
+        for index_x, x in enumerate(noeud.plateau):
+            [nouv_noeud(noeud, p_jouée, index_x, index_y) for index_y, y in enumerate(x) if y == None]
+    return random.choice(noeud.enfants)
 
 
 # entrée : noeud sélectionné (3)
@@ -51,6 +54,18 @@ def retropropagation(noeud, res):
         noeud.add_simul(res)
         noeud = noeud.parent
     return noeud
+
+
+# entrée : noeud parent, p_jouée, coordonnées sur le plateau(x,y)
+# sortie : noeud parent
+def nouv_noeud(noeud_p, pièce, x, y):
+    plateau = noeud_p.plateau.copy()
+    plateau[x][y] = pièce
+    reste = noeud_p.p_reste.copy()
+    [reste.pop(p) for p in reste if p == pièce]
+    noeud_e = Noeud(plateau, None, noeud_p, reste)
+    noeud_p.enfants.append(noeud_e)
+    return noeud_p
 
 
 # entrée : plateau
