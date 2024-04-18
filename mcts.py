@@ -81,8 +81,98 @@ def choix_case(plateau):
 
 # entrée : plateau
 # sortie : booléen
-def quarto():
-   pass
+def quarto(plateau):
+    # vérification des lignes
+    for x in range(4):
+        sum_grand = 0
+        sum_plein = 0
+        sum_clair = 0
+        sum_carre = 0
+        for y in range(4):
+           if plateau[x][y] == None: break
+           sum_grand += (plateau[x][y])["grand"]
+           sum_plein += (plateau[x][y])["plein"]
+           sum_clair += (plateau[x][y])["clair"]
+           sum_carre += (plateau[x][y])["carre"]
+        
+        if plateau[x][y] == None: continue
+        if sum_grand == 0 or sum_grand == 4:
+            return True
+        if sum_plein == 0 or sum_plein == 4:
+            return True
+        if sum_clair == 0 or sum_clair == 4:
+            return True
+        if sum_carre == 0 or sum_carre == 4:
+            return True
+    
+    # vérification des colonnes
+    for x in range(4):
+        sum_grand = 0
+        sum_plein = 0
+        sum_clair = 0
+        sum_carre = 0
+        for y in range(4):
+           if plateau[y][x] == None: break
+           sum_grand += (plateau[y][x])["grand"]
+           sum_plein += (plateau[y][x])["plein"]
+           sum_clair += (plateau[y][x])["clair"]
+           sum_carre += (plateau[y][x])["carre"]
+        
+        if plateau[y][x] == None: continue
+        if sum_grand == 0 or sum_grand == 4:
+            return True
+        if sum_plein == 0 or sum_plein == 4:
+            return True
+        if sum_clair == 0 or sum_clair == 4:
+            return True
+        if sum_carre == 0 or sum_carre == 4:
+            return True
+    
+    # vérification première diagonale
+    sum_grand = 0
+    sum_plein = 0
+    sum_clair = 0
+    sum_carre = 0
+    for x in range(4):
+        if plateau[x][x] == None: break
+        sum_grand += (plateau[x][x])["grand"]
+        sum_plein += (plateau[x][x])["plein"]
+        sum_clair += (plateau[x][x])["clair"]
+        sum_carre += (plateau[x][x])["carre"]
+    
+    if not plateau[x][x] == None:
+        if sum_grand == 0 or sum_grand == 4:
+            return True
+        if sum_plein == 0 or sum_plein == 4:
+            return True
+        if sum_clair == 0 or sum_clair == 4:
+            return True
+        if sum_carre == 0 or sum_carre == 4:
+            return True
+    
+    # vérification seconde diagonale
+    sum_grand = 0
+    sum_plein = 0
+    sum_clair = 0
+    sum_carre = 0
+    for x in range(4):
+        if plateau[x][3-x] == None: break
+        sum_grand += (plateau[x][3-x])["grand"]
+        sum_plein += (plateau[x][3-x])["plein"]
+        sum_clair += (plateau[x][3-x])["clair"]
+        sum_carre += (plateau[x][3-x])["carre"]
+    
+    if plateau[x][3-x] == None:
+        if sum_grand == 0 or sum_grand == 4:
+            return True
+        if sum_plein == 0 or sum_plein == 4:
+            return True
+        if sum_clair == 0 or sum_clair == 4:
+            return True
+        if sum_carre == 0 or sum_carre == 4:
+            return True
+    
+    return False
 
 #Structure de l'arbre
 class Noeud:
