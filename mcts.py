@@ -30,8 +30,8 @@ def expansion():
 # entrée : noeud sélectionné (3)
 # sortie : résultat
 def simulation(noeud, tour_joueur):
-    plateau = noeud.plateau
-    p_reste = noeud.p_reste
+    plateau = list(noeud.plateau)
+    p_reste = list(noeud.p_reste)
     while not quarto(plateau):
         i, j = choix_case(plateau)
         p_reste = random.shuffle(p_reste)
@@ -64,16 +64,32 @@ def choix_case(plateau):
     return random.choice(cases)
 
 
+def place_piece(ligne, colonne, piece):
+    if plateau[ligne][colonne] is None:
+        plateau[ligne][colonne] = piece
+        if quarto(plateau):
+            fin_partie(tour_joueur)
+    return plateau
+
+
 # entrée : plateau
 # sortie : booléen
-def quarto():
+def quarto(plateau):
    pass
+
+
+def nouvelle_partie():
+    global tour_joueur
+    plateau = [[None for _ in range(4)] for _ in range(4)]
+    tour_joueur = 0
+
+
 
 #Structure de l'arbre
 class Noeud:
-    def __init__(self, plateau, enfants, parent, p_reste):
+    def __init__(self, plateau, parent, p_reste):
         self.plateau    = plateau
-        self.enfants    = enfants
+        self.enfants    = []
         self.parent     = parent
         self.p_reste    = p_reste
         self.uct        = -1      # uct = -1 représente uct --> infinie
