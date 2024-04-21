@@ -1,4 +1,6 @@
 import random
+from math import log
+from math import sqrt
 
 # TOUT ECRIRE EN FRANCAIS!!!!
 # égalité = défaite
@@ -9,16 +11,47 @@ piece = {"grand" : 1,
         "clair" : 1,
         "carré" : 1}
 
+# Constantes
+INFINIE = -1
+
 # initialisation d'un plateau vide
 plateau = [[None for _ in range(4)] for _ in range(4)]
 
 # Tour du joueur : 0 Joueur 1 ; 1 Joueur 2
 tour_joueur = 0
 
+def calcul_uct (noeud, parent):
+    """
+        * Calcule et renvoie la valeur UCT du noeud en entrée
+    """
+    C = sqrt(2)
+
+    if noeud.get_simulation() != 0:
+        return ((noeud.get_victoire() / noeud.get_simulation()) + (C * sqrt(log(parent.get_simulation() / noeud.get_simulation())))) 
+    else:
+        return INFINIE
+
+
 # entrée : racine (1)
 # sortie : noeud sélectionné (2)
-def selection():
-    pass
+def selection(noeud):
+    global INFINIE
+    enfants = noeud.get_enfants()
+    uct_max = 0
+    position = 0
+
+    for i,enfant in enumerate(enfants):
+        uct = calcul_uct(enfant, noeud)
+        
+        if uct != INFINIE:
+            if uct > uct_max:
+                uct_max  = uct
+                position = i
+        else:
+            position = i
+    
+    return enfants[position]
+
 
 
 # entrée : noeud sélectionné (2)
