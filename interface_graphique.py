@@ -1,6 +1,7 @@
 import mcts
 import tkinter as tk
 from PIL import ImageTk, Image
+import re
 
 IMAGE_PLATEAU = "images/p-1.jpg"
 CHEMINS_IMAGES = ["images/p0.jpg", "images/p1.jpg", "images/p2.jpg", "images/p3.jpg", "images/p4.jpg", "images/p5.jpg", "images/p6.jpg", "images/p7.jpg", 
@@ -41,11 +42,12 @@ def deposer_une_piece(row, column):
         label_image = tk.Label(frame_plateau, image=image_tk, borderwidth=0, highlightthickness=0)
         label_image.image = image_tk 
         label_image.grid(row=row, column=column, padx=20, pady=20)
+        num_piece = int(re.findall(r"\d+", image_selectionnee)[0])
         image_selectionnee = ""
-        num_piece = (row + 1) * (column + 1) - 1
         piece = LISTES_PIECES[num_piece]
         #mcts.place_piece(row, column, piece)
         mcts.plateau[row][column] = piece
+        #print(mcts.plateau)
         if mcts.quarto(mcts.plateau):
             #fin_partie()
             print("fin partie")
