@@ -13,9 +13,22 @@ piece = {"grand" : 1,
 
 # Constantes
 INFINIE = -1
-
-# Constantes
-INFINIE = -1
+LISTES_PIECES = [{"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 1},
+                {"grand" : 1, "plein" : 0, "clair" : 1, "carre" : 1},
+                {"grand" : 0, "plein" : 1, "clair" : 1, "carre" : 1},
+                {"grand" : 0, "plein" : 0, "clair" : 1, "carre" : 1},
+                {"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 0},
+                {"grand" : 1, "plein" : 0, "clair" : 1, "carre" : 0},
+                {"grand" : 0, "plein" : 1, "clair" : 1, "carre" : 0},
+                {"grand" : 0, "plein" : 0, "clair" : 1, "carre" : 0},
+                {"grand" : 1, "plein" : 1, "clair" : 0, "carre" : 1},
+                {"grand" : 1, "plein" : 0, "clair" : 0, "carre" : 1},
+                {"grand" : 0, "plein" : 1, "clair" : 0, "carre" : 1},
+                {"grand" : 0, "plein" : 0, "clair" : 0, "carre" : 1},
+                {"grand" : 1, "plein" : 1, "clair" : 0, "carre" : 0},
+                {"grand" : 1, "plein" : 0, "clair" : 0, "carre" : 0},
+                {"grand" : 0, "plein" : 1, "clair" : 0, "carre" : 0},
+                {"grand" : 0, "plein" : 0, "clair" : 0, "carre" : 0}]
 
 # initialisation d'un plateau vide
 plateau = [[None for _ in range(4)] for _ in range(4)]
@@ -90,6 +103,7 @@ def retropropagation(noeud, res):
         noeud.add_simul(res)
         calcul_uct(noeud, noeud.parent)
         noeud = noeud.parent
+    return noeud
 
 
 # entrée : noeud parent, p_jouée, coordonnées sur le plateau(x,y)
@@ -104,18 +118,6 @@ def nouv_noeud(noeud_p, pièce, x, y):
     return noeud_p
 
 
-# entrée : noeud parent, p_jouée, coordonnées sur le plateau(x,y)
-# sortie : noeud parent
-def nouv_noeud(noeud_p, pièce, x, y):
-    plateau = noeud_p.plateau.copy()
-    plateau[x][y] = pièce
-    reste = noeud_p.p_reste.copy()
-    [reste.pop(p) for p in reste if p == pièce]
-    noeud_e = Noeud(plateau, None, noeud_p, reste)
-    noeud_p.enfants.append(noeud_e)
-    return noeud_p
-
-
 # entrée : plateau
 # sortie : (i, j) coordonnée de la case choisie
 def choix_case(plateau):
@@ -125,14 +127,6 @@ def choix_case(plateau):
             if plateau[i][j] is None:
                 cases.append((i,j))
     return random.choice(cases)
-
-
-def place_piece(ligne, colonne, piece):
-    if plateau[ligne][colonne] is None:
-        plateau[ligne][colonne] = piece
-        if quarto(plateau):
-            fin_partie(tour_joueur)
-    return plateau
 
 
 # entrée : plateau
@@ -243,7 +237,7 @@ def changement_joueur():
 
 #Structure de l'arbre
 class Noeud:
-    def __init__(self, plateau, parent, p_reste):
+    def __init__(self, plateau, parent=None, p_reste=LISTES_PIECES):
         self.plateau    = plateau
         self.enfants    = []
         self.parent     = parent
