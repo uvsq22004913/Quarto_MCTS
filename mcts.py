@@ -54,22 +54,10 @@ def calcul_uct (noeud, parent):
 # sortie : noeud sélectionné (2)
 
 def selection(noeud):
-    global INFINIE
-    enfants = noeud.get_enfants()
-    uct_max = 0
-    position = 0
+    while noeud.enfants:
+        noeud = noeud.meilleur_enfant()
+    return noeud
 
-    for i,enfant in enumerate(enfants):
-        uct = calcul_uct(enfant, noeud)
-        
-        if uct != INFINIE:
-            if uct > uct_max:
-                uct_max  = uct
-                position = i
-        else:
-            position = i
-    
-    return enfants[position]
 
 # entrée : noeud sélectionné (2)
 # sortie : noeud sélectionné (3)
@@ -87,7 +75,7 @@ def expansion(noeud):
                 if plateau[i][j] == None:
                     plateau[i][j] = piece
                     pieces_restantes.remove(piece)
-                    fils = Noeud(plateau, noeud)
+                    fils = Noeud(plateau, noeud, pieces_restantes)
                     noeud.enfants.append(fils)
                     plateau = deepcopy(noeud.get_plateau())
                     pieces_restantes = deepcopy(noeud.get_p_reste())
@@ -99,10 +87,10 @@ def simulation(noeud, tour_joueur):
     plateau = list(noeud.plateau)
     p_reste = list(noeud.p_reste)
     while not quarto(plateau):
-        i, j = choix_case(plateau)
+        ligne, colonne = choix_case(plateau)
         p_reste = random.shuffle(p_reste)
         if plateau[ligne][colonne] is None:
-            plateau[i][j] = p_reste.pop()
+            plateau[ligne][colonne] = p_reste.pop()
         tour_joueur = 1 - tour_joueur
     return 1 - tour_joueur
 
@@ -115,7 +103,7 @@ def retropropagation(noeud, res):
             noeud.add_simul(res)
             return noeud
         noeud.add_simul(res)
-        calcul_uct(noeud, noeud.parent)
+        noeud.uct = calcul_uct(noeud, noeud.parent)
         noeud = noeud.parent
     return noeud
 
@@ -235,9 +223,11 @@ def quarto(plateau):
 
 
 def nouvelle_partie():
-    global tour_joueur
-    plateau = [[None for _ in range(4)] for _ in range(4)]
-    tour_joueur = 0
+    for i in range(4):
+        for j in range(4):
+            plateau[i][j] = None
+    if tour_joueur == 1:
+        changement_joueur()
 
 def changement_joueur():
     global tour_joueur
@@ -251,7 +241,7 @@ class Noeud:
         self.enfants    = []
         self.parent     = parent
         self.p_reste    = p_reste
-        self.uct        = -1      # uct = -1 représente uct --> infinie
+        self.uct        = INFINIE      # uct = -1 représente uct --> infinie
         self.simulation = 0
         self.victoire   = 0
 
@@ -267,17 +257,33 @@ class Noeud:
     def get_simulation(self):
         return self.simulation
 
+    def get_p_reste(self):
+        return self.p_reste
+
     def add_simul(self, res):
         self._simulation += 1
         self._victoire += res
 
-    def get_p_reste(self):
-        return self.p_reste 
+    def calcul_uct(self):
+        """  * Calcule et renvoie la valeur UCT du noeud en entrée  """
+        C = sqrt(2)
 
-def MCTS(racine):
-    global DUREE
-    debut = time()
-    
-    while time() - debut < DUREE:
-        pass
+        if self.get_simulation() != 0:
+            self.uct = ((self.get_victoire() / self.get_simulation()) + (C * sqrt(log(self.parent.get_simulation() / self.get_simulation())))) 
+        else:
+            self.uct = INFINIE
+
+    # entrée : noeud
+    # sortie : noeud enfant avec le meilleur score UCT
+    def meilleur_enfant(self):
+        if not self.enfants :
+            return self
+        uct_max = 0
+        for enfant in self.enfants:
+            if enfant.uct == INFINIE:
+                return enfant
+            if enfant.uct > uct_max:
+                uct_max = enfant.uct
+                enfant_max = enfant
+        return enfant_max
 
