@@ -38,21 +38,9 @@ plateau = [[None for _ in range(4)] for _ in range(4)]
 
 # Tour du joueur : 0 Joueur 1 ; 1 Joueur 2
 tour_joueur = 0
-
-def calcul_uct (noeud, parent):
-    """
-        * Calcule et renvoie la valeur UCT du noeud en entrée
-    """
-    C = sqrt(2)
-
-    if noeud.get_simulation() != 0:
-        return ((noeud.get_victoire() / noeud.get_simulation()) + (C * sqrt(log(parent.get_simulation() / noeud.get_simulation())))) 
-    else:
-        return INFINIE
  
 # entrée : racine (1)
 # sortie : noeud sélectionné (2)
-
 def selection(noeud):
     while noeud.enfants:
         noeud = noeud.meilleur_enfant()
@@ -79,6 +67,7 @@ def expansion(noeud):
                     noeud.enfants.append(fils)
                     plateau = deepcopy(noeud.get_plateau())
                     pieces_restantes = deepcopy(noeud.get_p_reste())
+    return noeud.enfants[0]
                 
 
 # entrée : noeud sélectionné (3)
@@ -103,9 +92,8 @@ def retropropagation(noeud, res):
             noeud.add_simul(res)
             return noeud
         noeud.add_simul(res)
-        noeud.uct = calcul_uct(noeud, noeud.parent)
+        noeud.calcul_uct()
         noeud = noeud.parent
-    return noeud
 
 
 # entrée : noeud parent, p_jouée, coordonnées sur le plateau(x,y)
@@ -287,3 +275,16 @@ class Noeud:
                 enfant_max = enfant
         return enfant_max
 
+
+def MCTS(racine):
+    debut = time()
+
+    while time() - debut() < DUREE:
+        noeud_selectione = simulation(racine)
+        noeud_expansion = expansion(noeud_selectione)
+        resultat = simulation(noeud_expansion)
+        noeud_final = retropropagation(noeud_expansion, resultat)
+    return noeud_final
+
+racine = Noeud(plateau)
+MCTS(racine)
