@@ -114,7 +114,7 @@ fenetre.minsize(width=550, height=800)
 label = tk.Label(fenetre, text="Quarto", font=("Arial", 25), bg="black", fg="red")
 label.grid(row=0)
 
-case_vide = Image.open(IMAGE_PLATEAU)
+case_vide = Image.open("images/vide.jpg")
 case_vide = ImageTk.PhotoImage(case_vide)
 frame_tour = tk.Frame(fenetre, bg="black")
 frame_tour.grid(row=2)
