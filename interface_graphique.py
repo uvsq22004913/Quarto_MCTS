@@ -89,12 +89,13 @@ def fin_partie():
 
 def nouvelle_partie(boutton):
     # Changer les frames global et reinnitialiser les pieces
+    global frame_pieces, frame_plateau, pieces
     mcts.nouvelle_partie()
     boutton.destroy()
     frame_pieces.destroy()
     frame_plateau.destroy()
-    creation_pieces()
-    creation_plateau()
+    frame_plateau = creation_plateau()
+    frame_pieces, pieces = creation_pieces()
     label_actuel.config(text="A vous de choisir une pièce.", image=label_actuel.image_vide)
 
 
