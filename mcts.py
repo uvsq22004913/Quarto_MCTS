@@ -1,6 +1,8 @@
 import random
 from math import log
 from math import sqrt
+from copy import deepcopy
+from time import time
 
 # TOUT ECRIRE EN FRANCAIS!!!!
 # égalité = défaite
@@ -9,10 +11,27 @@ from math import sqrt
 piece = {"grand" : 1,
         "plein" : 1,
         "clair" : 1,
-        "carré" : 1}
+        "carre" : 1}
 
 # Constantes
 INFINIE = -1
+DUREE = 3
+LISTES_PIECES = [{"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 1},
+                 {"grand" : 1, "plein" : 0, "clair" : 1, "carre" : 1},
+                 {"grand" : 0, "plein" : 1, "clair" : 1, "carre" : 1},
+                 {"grand" : 0, "plein" : 0, "clair" : 1, "carre" : 1},
+                 {"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 0},
+                 {"grand" : 1, "plein" : 0, "clair" : 1, "carre" : 0},
+                 {"grand" : 0, "plein" : 1, "clair" : 1, "carre" : 0},
+                 {"grand" : 0, "plein" : 0, "clair" : 1, "carre" : 0},
+                 {"grand" : 1, "plein" : 1, "clair" : 0, "carre" : 1},
+                 {"grand" : 1, "plein" : 0, "clair" : 0, "carre" : 1},
+                 {"grand" : 0, "plein" : 1, "clair" : 0, "carre" : 1},
+                 {"grand" : 0, "plein" : 0, "clair" : 0, "carre" : 1},
+                 {"grand" : 1, "plein" : 1, "clair" : 0, "carre" : 0},
+                 {"grand" : 1, "plein" : 0, "clair" : 0, "carre" : 0},
+                 {"grand" : 0, "plein" : 1, "clair" : 0, "carre" : 0},
+                 {"grand" : 0, "plein" : 0, "clair" : 0, "carre" : 0}]
 
 # initialisation d'un plateau vide
 plateau = [[None for _ in range(4)] for _ in range(4)]
@@ -30,10 +49,10 @@ def calcul_uct (noeud, parent):
         return ((noeud.get_victoire() / noeud.get_simulation()) + (C * sqrt(log(parent.get_simulation() / noeud.get_simulation())))) 
     else:
         return INFINIE
-
-
+ 
 # entrée : racine (1)
 # sortie : noeud sélectionné (2)
+
 def selection(noeud):
     global INFINIE
     enfants = noeud.get_enfants()
@@ -52,26 +71,38 @@ def selection(noeud):
     
     return enfants[position]
 
-
 # entrée : noeud sélectionné (2)
 # sortie : noeud sélectionné (3)
 def expansion(noeud):
-    for p_jouée in noeud.p_reste:
-        for index_x, x in enumerate(noeud.plateau):
-            [nouv_noeud(noeud, p_jouée, index_x, index_y) for index_y, y in enumerate(x) if y == None]
-    return random.choice(noeud.enfants)
 
+    pieces_restantes = deepcopy(noeud.get_p_reste())
+    plateau = deepcopy(noeud.get_plateau())
+
+    # Parcoure la liste des pièces restantes
+    for piece in noeud.get_p_reste():
+        # Parcoure les lignes du plateau
+        for i in range(4):
+            # Parcoure les colonnes du plateau
+            for j in range(4):
+                if plateau[i][j] == None:
+                    plateau[i][j] = piece
+                    pieces_restantes.remove(piece)
+                    fils = Noeud(plateau, noeud)
+                    noeud.enfants.append(fils)
+                    plateau = deepcopy(noeud.get_plateau())
+                    pieces_restantes = deepcopy(noeud.get_p_reste())
+                
 
 # entrée : noeud sélectionné (3)
 # sortie : résultat
 def simulation(noeud, tour_joueur):
-    plateau = noeud.plateau
-    p_reste = noeud.p_reste
+    plateau = list(noeud.plateau)
+    p_reste = list(noeud.p_reste)
     while not quarto(plateau):
         i, j = choix_case(plateau)
         p_reste = random.shuffle(p_reste)
-        plateau[i][j] = p_reste.pop()
-        #placer_piece(plateau, i, j, p_reste.pop())
+        if plateau[ligne][colonne] is None:
+            plateau[i][j] = p_reste.pop()
         tour_joueur = 1 - tour_joueur
     return 1 - tour_joueur
 
@@ -84,6 +115,7 @@ def retropropagation(noeud, res):
             noeud.add_simul(res)
             return noeud
         noeud.add_simul(res)
+        calcul_uct(noeud, noeud.parent)
         noeud = noeud.parent
     return noeud
 
@@ -95,7 +127,7 @@ def nouv_noeud(noeud_p, pièce, x, y):
     plateau[x][y] = pièce
     reste = noeud_p.p_reste.copy()
     [reste.pop(p) for p in reste if p == pièce]
-    noeud_e = Noeud(plateau, None, noeud_p, reste)
+    noeud_e = Noeud(plateau, noeud_p, reste)
     noeud_p.enfants.append(noeud_e)
     return noeud_p
 
@@ -126,7 +158,6 @@ def quarto(plateau):
            sum_plein += (plateau[x][y])["plein"]
            sum_clair += (plateau[x][y])["clair"]
            sum_carre += (plateau[x][y])["carre"]
-        
         if plateau[x][y] == None: continue
         if sum_grand == 0 or sum_grand == 4:
             return True
@@ -136,7 +167,6 @@ def quarto(plateau):
             return True
         if sum_carre == 0 or sum_carre == 4:
             return True
-    
     # vérification des colonnes
     for x in range(4):
         sum_grand = 0
@@ -149,7 +179,6 @@ def quarto(plateau):
            sum_plein += (plateau[y][x])["plein"]
            sum_clair += (plateau[y][x])["clair"]
            sum_carre += (plateau[y][x])["carre"]
-        
         if plateau[y][x] == None: continue
         if sum_grand == 0 or sum_grand == 4:
             return True
@@ -159,7 +188,6 @@ def quarto(plateau):
             return True
         if sum_carre == 0 or sum_carre == 4:
             return True
-    
     # vérification première diagonale
     sum_grand = 0
     sum_plein = 0
@@ -181,7 +209,6 @@ def quarto(plateau):
             return True
         if sum_carre == 0 or sum_carre == 4:
             return True
-    
     # vérification seconde diagonale
     sum_grand = 0
     sum_plein = 0
@@ -193,8 +220,8 @@ def quarto(plateau):
         sum_plein += (plateau[x][3-x])["plein"]
         sum_clair += (plateau[x][3-x])["clair"]
         sum_carre += (plateau[x][3-x])["carre"]
-    
-    if plateau[x][3-x] == None:
+
+    if not plateau[x][3-x] == None:
         if sum_grand == 0 or sum_grand == 4:
             return True
         if sum_plein == 0 or sum_plein == 4:
@@ -203,14 +230,25 @@ def quarto(plateau):
             return True
         if sum_carre == 0 or sum_carre == 4:
             return True
-    
+
     return False
+
+
+def nouvelle_partie():
+    global tour_joueur
+    plateau = [[None for _ in range(4)] for _ in range(4)]
+    tour_joueur = 0
+
+def changement_joueur():
+    global tour_joueur
+    tour_joueur = 1 - tour_joueur
+
 
 #Structure de l'arbre
 class Noeud:
-    def __init__(self, plateau, enfants, parent, p_reste):
+    def __init__(self, plateau, parent=None, p_reste=LISTES_PIECES):
         self.plateau    = plateau
-        self.enfants    = enfants
+        self.enfants    = []
         self.parent     = parent
         self.p_reste    = p_reste
         self.uct        = -1      # uct = -1 représente uct --> infinie
@@ -229,10 +267,17 @@ class Noeud:
     def get_simulation(self):
         return self.simulation
 
-# initialisation d'un plateau vide
-plateau = [
-            [],
-            [],
-            [],
-            []
-          ]
+    def add_simul(self, res):
+        self._simulation += 1
+        self._victoire += res
+
+    def get_p_reste(self):
+        return self.p_reste 
+
+def MCTS(racine):
+    global DUREE
+    debut = time()
+    
+    while time() - debut < DUREE:
+        pass
+
