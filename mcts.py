@@ -2,7 +2,7 @@ import random
 from math import log
 from math import sqrt
 from copy import deepcopy
-from time import time
+import time
 
 # TOUT ECRIRE EN FRANCAIS!!!!
 # égalité = défaite
@@ -36,7 +36,7 @@ LISTES_PIECES = [{"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 1},
 # initialisation d'un plateau vide
 plateau = [[None for _ in range(4)] for _ in range(4)]
 
-# Tour du joueur : 0 Joueur 1 ; 1 Joueur 2
+# Tour du joueur : 0 Joueur ; 1 ordi
 tour_joueur = 0
  
 # entrée : racine (1)
@@ -217,6 +217,7 @@ def nouvelle_partie():
     if tour_joueur == 1:
         changement_joueur()
 
+
 def changement_joueur():
     global tour_joueur
     tour_joueur = 1 - tour_joueur
@@ -277,12 +278,13 @@ class Noeud:
 
 
 def MCTS(racine):
-    debut = time()
+    global DUREE
+  
 
-    while time() - debut() < DUREE:
-        noeud_selectione = simulation(racine)
+    for i in range(10):
+        noeud_selectione = selection(racine)
         noeud_expansion = expansion(noeud_selectione)
-        resultat = simulation(noeud_expansion)
+        resultat = simulation(noeud_expansion, 0)
         noeud_final = retropropagation(noeud_expansion, resultat)
     return noeud_final
 
