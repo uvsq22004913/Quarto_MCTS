@@ -13,8 +13,13 @@ piece = {"grand" : 1,
         "carre" : 1}
 
 # Constantes
+ROUGE = '\033[91m'
+VERT = '\033[92m'
+BLEU = '\033[94m'
+FIN = '\033[0m'
+
 INFINIE = -1
-DUREE = 300
+DUREE = 400
 C = sqrt(2)
 LISTES_PIECES = [{"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 1},
                  {"grand" : 1, "plein" : 0, "clair" : 1, "carre" : 1},
@@ -253,24 +258,15 @@ class Noeud:
         self.simulation += 1
         self.victoire += res
 
-    """
-    def calcul_uct(self):
-         * Calcule et renvoie la valeur UCT du noeud en entrée 
-        C = sqrt(2)
-
-        if self.get_simulation() != 0 and self.parent.get_simulation() != 0:
-            if log(self.parent.get_simulation() / self.get_simulation()) >= 0:
-                self.uct = ((self.victoire / self.get_simulation()) + (C * sqrt(log(self.parent.get_simulation() / self.get_simulation())))) 
-        else:
-            self.uct = INFINIE
-    """
-
     def calcul_uct(self):
         """  * Calcule et renvoie la valeur UCT du noeud en entrée  """
         global INFINIE
         global C
+        # nombre de victoires du noeud
         Wi = self.victoire
+        # nombre de simulations du parent du noeud
         Ni = self.parent.simulation
+        # nombre de simulations du noeud
         ni = self.simulation
 
         if ni == 0 or Ni == 0:
@@ -307,6 +303,7 @@ class Noeud:
 
 # Check si il y a quarto et plateau vide
 def depose_piece(racine):
+    expansion(racine)
     for _ in range(DUREE):
         noeud_selectione = selection(racine)
 
@@ -316,8 +313,17 @@ def depose_piece(racine):
         resultat = simulation(noeud_selectione, tour_joueur)
         noeud_final = retropropagation(noeud_selectione, resultat)
         
-    for enfant in racine.enfants:
-        print(enfant.simulation, enfant.victoire)
     noeud_final = noeud_final.meilleur_enfant()
-    
-    return noeud_final.piece_choisie()
+    return noeud_final
+
+
+def choisir_piece(racine):
+    for _ in range(DUREE):
+        pass
+
+racine = Noeud(plateau)
+noeud_final = depose_piece(racine)
+
+print(BLEU + "Nbr de simulations: " + FIN, racine.simulation)
+print(BLEU + "Nbr de victoires:   " + FIN, racine.victoire)
+print(BLEU + "pièce a déposer:    " + FIN, noeud_final.piece_choisie())
