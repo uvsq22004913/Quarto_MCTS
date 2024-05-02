@@ -2,7 +2,6 @@ import random
 from math import log
 from math import sqrt
 from copy import deepcopy
-import time
 
 # TOUT ECRIRE EN FRANCAIS!!!!
 # égalité = défaite
@@ -15,7 +14,8 @@ piece = {"grand" : 1,
 
 # Constantes
 INFINIE = -1
-DUREE = 3
+DUREE = 300
+C = sqrt(2)
 LISTES_PIECES = [{"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 1},
                  {"grand" : 1, "plein" : 0, "clair" : 1, "carre" : 1},
                  {"grand" : 0, "plein" : 1, "clair" : 1, "carre" : 1},
@@ -73,11 +73,11 @@ def expansion(noeud):
 # entrée : noeud sélectionné (3)
 # sortie : résultat
 def simulation(noeud, tour_joueur):
-    plateau = list(noeud.plateau)
-    p_reste = list(noeud.p_reste)
-    while not quarto(plateau):
+    plateau = deepcopy(noeud.plateau)
+    p_reste = deepcopy(noeud.p_reste)
+    while not quarto(plateau) and p_reste:
         ligne, colonne = choix_case(plateau)
-        p_reste = random.shuffle(p_reste)
+        random.shuffle(p_reste)
         if plateau[ligne][colonne] is None:
             plateau[ligne][colonne] = p_reste.pop()
         tour_joueur = 1 - tour_joueur
@@ -111,12 +111,12 @@ def nouv_noeud(noeud_p, pièce, x, y):
 # entrée : plateau
 # sortie : (i, j) coordonnée de la case choisie
 def choix_case(plateau):
-    cases = list()
+    cases_vide = list()
     for i in range(4):
         for j in range(4):
-            if plateau[i][j] is None:
-                cases.append((i,j))
-    return random.choice(cases)
+            if plateau[i][j] == None:
+                cases_vide.append((i,j))
+    return random.choice(cases_vide)
 
 
 # entrée : plateau
@@ -250,17 +250,33 @@ class Noeud:
         return self.p_reste
 
     def add_simul(self, res):
-        self._simulation += 1
-        self._victoire += res
+        self.simulation += 1
+        self.victoire += res
+
+    """
+    def calcul_uct(self):
+         * Calcule et renvoie la valeur UCT du noeud en entrée 
+        C = sqrt(2)
+
+        if self.get_simulation() != 0 and self.parent.get_simulation() != 0:
+            if log(self.parent.get_simulation() / self.get_simulation()) >= 0:
+                self.uct = ((self.victoire / self.get_simulation()) + (C * sqrt(log(self.parent.get_simulation() / self.get_simulation())))) 
+        else:
+            self.uct = INFINIE
+    """
 
     def calcul_uct(self):
         """  * Calcule et renvoie la valeur UCT du noeud en entrée  """
-        C = sqrt(2)
+        global INFINIE
+        global C
+        Wi = self.victoire
+        Ni = self.parent.simulation
+        ni = self.simulation
 
-        if self.get_simulation() != 0:
-            self.uct = ((self.get_victoire() / self.get_simulation()) + (C * sqrt(log(self.parent.get_simulation() / self.get_simulation())))) 
-        else:
+        if ni == 0 or Ni == 0:
             self.uct = INFINIE
+        else: 
+            self.uct = (Wi / ni) + C * (sqrt (log(Ni) / ni))
 
     # entrée : noeud
     # sortie : noeud enfant avec le meilleur score UCT
@@ -275,18 +291,33 @@ class Noeud:
                 uct_max = enfant.uct
                 enfant_max = enfant
         return enfant_max
+    
+    def piece_choisie(self):
+        if self.parent != None:
+            plateau_parent = self.parent.plateau
+            for i in range(4):
+                for j in range(4):
+                    if self.plateau[i][j] != plateau_parent[i][j]:
+                        piece_choisie = self.plateau[i][j]
+                        position = (i, j)
+                        return [piece_choisie, position]
+        else:
+            return "Cette méthode n'est pas définie pour la racine."
 
 
-def MCTS(racine):
-    global DUREE
-  
-
-    for i in range(10):
+# Check si il y a quarto et plateau vide
+def depose_piece(racine):
+    for _ in range(DUREE):
         noeud_selectione = selection(racine)
-        noeud_expansion = expansion(noeud_selectione)
-        resultat = simulation(noeud_expansion, 0)
-        noeud_final = retropropagation(noeud_expansion, resultat)
-    return noeud_final
 
-racine = Noeud(plateau)
-MCTS(racine)
+        if noeud_selectione.uct != INFINIE:
+            noeud_selectione = expansion(noeud_selectione)
+    
+        resultat = simulation(noeud_selectione, tour_joueur)
+        noeud_final = retropropagation(noeud_selectione, resultat)
+        
+    for enfant in racine.enfants:
+        print(enfant.simulation, enfant.victoire)
+    noeud_final = noeud_final.meilleur_enfant()
+    
+    return noeud_final.piece_choisie()
