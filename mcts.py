@@ -51,7 +51,12 @@ def selection(noeud):
         noeud = noeud.meilleur_enfant()
     return noeud
 
+def _selection(noeud):
+    while noeud.enfants:
+        noeud = noeud.moins_bon_enfant()
+    return noeud
 
+"""
 # entrée : noeud sélectionné (2)
 # sortie : noeud sélectionné (3)
 def expansion(noeud):
@@ -73,7 +78,49 @@ def expansion(noeud):
                     plateau = deepcopy(noeud.get_plateau())
                     pieces_restantes = deepcopy(noeud.get_p_reste())
     return noeud.enfants[0]
+    
+
+"""
+def expansion(noeud, piece_a_deposer):
+    pieces_restantes = deepcopy(noeud.get_p_reste())
+    plateau = deepcopy(noeud.get_plateau())
+
+    # Parcoure les lignes du plateau
+    for i in range(4):
+        # Parcoure les colonnes du plateau
+        for j in range(4):
+            if plateau[i][j] == None:
+                plateau[i][j] = piece_a_deposer
+                pieces_restantes.remove(piece_a_deposer)
+                fils = Noeud(plateau, noeud, pieces_restantes)
+                noeud.enfants.append(fils)
+                plateau = deepcopy(noeud.get_plateau())
+                pieces_restantes = deepcopy(noeud.get_p_reste())
+    # pourquoi pas essayer de renvoyer un enfant aléatoire pas toujours le premier
+    return noeud.enfants[0]
                 
+def _expansion(noeud):
+    """
+        fonction expansion pour le MCTS qui choisie la pièce a faire passer a l'adversaire
+    """
+
+    pieces_restantes = deepcopy(noeud.get_p_reste())
+    plateau = deepcopy(noeud.get_plateau())
+
+    # Parcoure la liste des pièces restantes
+    for piece in noeud.get_p_reste():
+        # Parcoure les lignes du plateau
+        for i in range(4):
+            # Parcoure les colonnes du plateau
+            for j in range(4):
+                if plateau[i][j] == None:
+                    plateau[i][j] = piece
+                    pieces_restantes.remove(piece)
+                    fils = Noeud(plateau, noeud, pieces_restantes)
+                    noeud.enfants.append(fils)
+                    plateau = deepcopy(noeud.get_plateau())
+                    pieces_restantes = deepcopy(noeud.get_p_reste())
+    return noeud.enfants[0]
 
 # entrée : noeud sélectionné (3)
 # sortie : résultat
@@ -288,6 +335,15 @@ class Noeud:
                 enfant_max = enfant
         return enfant_max
     
+    def moins_bon_enfant(self):
+        uct_min = self.enfants[0].uct
+
+        for enfant in self.enfants:
+            if enfant.uct <= uct_min:
+                uct_min = enfant.uct
+                moins_bon_enfant = enfant
+        return moins_bon_enfant
+    """
     def piece_choisie(self):
         if self.parent != None:
             plateau_parent = self.parent.plateau
@@ -299,31 +355,73 @@ class Noeud:
                         return [piece_choisie, position]
         else:
             return "Cette méthode n'est pas définie pour la racine."
+    """
+
+    def position_piece_deposee(self):
+        
+        if self.parent != None:
+            plateau_parent = self.parent.plateau
+            for i in range(4):
+                for j in range(4):
+                    if plateau_parent[i][j] != self.plateau:
+                        return (i, j)
+        else:
+            return "Cette méthode n'est pas définie pour la racine."
+        
+    def piece_choisie(self):
+        """
+            renvoie la pièce différente entre les pièces restantes du noueds et celle du père
+        """
+        if self.parent != None:
+            pieces_restantes_parent = self.parent.p_reste
+        
+            for piece_parent in pieces_restantes_parent:
+                if piece_parent not in self.p_reste:
+                    return piece
+        else:
+            return "Cette méthode n'est pas définie pour la racine."
 
 
 # Check si il y a quarto et plateau vide
-def depose_piece(racine):
-    expansion(racine)
+def depose_piece(racine, piece_a_deposer):
+    if not racine.enfants:
+        expansion(racine, piece_a_deposer)
     for _ in range(DUREE):
         noeud_selectione = selection(racine)
 
         if noeud_selectione.uct != INFINIE:
-            noeud_selectione = expansion(noeud_selectione)
+            noeud_selectione = _expansion(noeud_selectione)
     
         resultat = simulation(noeud_selectione, tour_joueur)
-        noeud_final = retropropagation(noeud_selectione, resultat)
+        noeud = retropropagation(noeud_selectione, resultat)
         
-    noeud_final = noeud_final.meilleur_enfant()
-    return noeud_final
+    noeud_final = noeud.meilleur_enfant()
+    position = noeud_final.position_piece_deposee()
+    return position
 
 
 def choisir_piece(racine):
+    if not racine.enfants == 0:
+        _expansion(racine)
     for _ in range(DUREE):
-        pass
+        noeud_selectione = _selection(racine)
+        if noeud_selectione.uct != INFINIE:
+            noeud_selectione = _expansion(noeud_selectione)
+    
+        resultat = simulation(noeud_selectione, tour_joueur)
+        noeud = retropropagation(noeud_selectione, resultat)
+
+    noeud_final = noeud.moins_bon_enfant()
+    piece_choisie = noeud_final.piece_choisie()
+    return piece_choisie
+
 
 racine = Noeud(plateau)
-noeud_final = depose_piece(racine)
+#piece_choisie = choisir_piece(racine)
+piece_a_deposer = {"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 0}
+position = depose_piece(racine, piece_a_deposer)
 
-print(BLEU + "Nbr de simulations: " + FIN, racine.simulation)
-print(BLEU + "Nbr de victoires:   " + FIN, racine.victoire)
-print(BLEU + "pièce a déposer:    " + FIN, noeud_final.piece_choisie())
+piece_choisie = choisir_piece(racine)
+
+print(BLEU + "Position de la pièce: " + FIN, position)
+print(BLEU + "La pièce choisie est: " + FIN, piece_choisie)
