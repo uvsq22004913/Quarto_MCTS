@@ -343,19 +343,7 @@ class Noeud:
                 uct_min = enfant.uct
                 moins_bon_enfant = enfant
         return moins_bon_enfant
-    """
-    def piece_choisie(self):
-        if self.parent != None:
-            plateau_parent = self.parent.plateau
-            for i in range(4):
-                for j in range(4):
-                    if self.plateau[i][j] != plateau_parent[i][j]:
-                        piece_choisie = self.plateau[i][j]
-                        position = (i, j)
-                        return [piece_choisie, position]
-        else:
-            return "Cette méthode n'est pas définie pour la racine."
-    """
+    
 
     def position_piece_deposee(self):
         
@@ -382,7 +370,6 @@ class Noeud:
             return "Cette méthode n'est pas définie pour la racine."
 
 
-# Check si il y a quarto et plateau vide
 def depose_piece(racine, piece_a_deposer):
     if not racine.enfants:
         expansion(racine, piece_a_deposer)
@@ -422,6 +409,3 @@ piece_a_deposer = {"grand" : 1, "plein" : 1, "clair" : 1, "carre" : 0}
 position = depose_piece(racine, piece_a_deposer)
 
 piece_choisie = choisir_piece(racine)
-
-print(BLEU + "Position de la pièce: " + FIN, position)
-print(BLEU + "La pièce choisie est: " + FIN, piece_choisie)

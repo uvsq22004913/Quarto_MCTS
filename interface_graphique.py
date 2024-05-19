@@ -157,6 +157,7 @@ def deposer_une_piece(row, column, frame_plateau):
         label_image.image = image_tk 
         label_image.grid(row=row, column=column, padx=20, pady=20)
         num_piece = int(re.findall(r"\d+", image_selectionnee)[0])
+        print(num_piece)
         image_selectionnee = ""
         piece = mcts.LISTES_PIECES[num_piece]
         piece_actuel()
@@ -235,8 +236,9 @@ if __name__ == "__main__":
 
     LARGEUR_ECRAN = fenetre.winfo_screenwidth()
     HAUTEUR_ECRAN = fenetre.winfo_screenheight()
-    fenetre.maxsize(width=LARGEUR_ECRAN, height=HAUTEUR_ECRAN)
-    fenetre.minsize(width=550, height=800)
+    fenetre.geometry(f"{LARGEUR_ECRAN}x{HAUTEUR_ECRAN}")
+    #fenetre.maxsize(width=LARGEUR_ECRAN, height=HAUTEUR_ECRAN)
+    fenetre.minsize(width=550, height=HAUTEUR_ECRAN)
 
     label = tk.Label(fenetre, text="Quarto", font=("Arial", 25), bg="black", fg="red")
     label.grid(row=0)
